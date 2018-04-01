@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Database {
+	int32 Version = 1;
+   map<string, int64> PathWeight = 2;
+}
