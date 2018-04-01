@@ -1,7 +1,7 @@
 PREFIX = /usr/local
 all: jmp
 
-jmp: cmd/jmp/main.go jumpdb/jumpdb.pb.go jumpdb/DB.go
+jmp: cmd/jmp/main.go jumpdb/jumpdb.pb.go jumpdb/DB.go test
 	go build -o $@ $<
 
 jumpdb/jumpdb.pb.go: jumpdb/jumpdb.proto
@@ -20,3 +20,7 @@ install: jmp
 	cp -f jmp $(DESTDIR)$(PREFIX)/bin
 	@echo "For completions, you want to run 'make completions' as regular user"
 	@echo "Feel free to mv the locally installed completions to a system path (e.g. /etc/bash_completion.d/)"
+
+.PHONY: test
+test:
+	cd jumpdb && go test
