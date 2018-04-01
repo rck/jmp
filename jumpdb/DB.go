@@ -119,7 +119,7 @@ func (d *DB) normalize() error {
 	}
 
 	for p, w := range d.db.GetPathWeight() {
-		d.db.PathWeight[p] = w - min
+		d.db.PathWeight[p] = w - min + 1
 	}
 
 	return nil
@@ -138,10 +138,15 @@ func (d *DB) setEntry(entry DBEntry) error {
 func (d *DB) IncEntry(entry DBEntry) error {
 	if entry.Weight == 1<<63-1 {
 		if err := d.normalize(); err != nil {
-			return err
+			// Could not normalize, keep everything as is
+			return nil
 		}
 	}
-	entry.Weight++
+	curWeight, ok := d.db.PathWeight[entry.Path]
+	if !ok {
+		return fmt.Errorf("No existing entry matching %s", entry.Path)
+	}
+	entry.Weight = curWeight + 1
 	return d.setEntry(entry)
 }
 
