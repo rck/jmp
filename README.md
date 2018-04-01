@@ -39,7 +39,7 @@ Yes, this is not a new idea at all. So what is wrong with these? Nothing, but:
 
 `jump` is used to add "bookmarks" and does not learn. I always forgot how to add new bookmarks and the ones I
 had were ugly, like "utils" for my development copy of "drbd-utils", and "usutils", for the "upstream
-version.". I remember parts of a path better than bookmarks.
+version". I remember parts of a path better than bookmarks.
 
 `autojump` is closer to what `jmp` does, but for my taste it has too much "auto magic". If overwrites various
 shell commands to learn every directory you `cd` into.
@@ -51,4 +51,4 @@ the database.
 Thanks to `autojump` for the idea and for the completion files, which I shamelessly copied.
 
 Strictly speaking, the DB should use some `flock`-ing, but as long as I have only 10 fingers and 1 brain,
-accesses serializes themselves.
+accesses serialize themselves.
