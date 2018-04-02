@@ -1,7 +1,7 @@
 PREFIX = /usr/local
 all: jmp
 
-jmp: cmd/jmp/main.go jumpdb/jumpdb.pb.go jumpdb/DB.go test
+jmp: cmd/jmp/main.go jumpdb/jumpdb.pb.go jumpdb/DB.go
 	go build -o $@ $<
 
 jumpdb/jumpdb.pb.go: jumpdb/jumpdb.proto
