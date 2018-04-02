@@ -56,9 +56,9 @@ func main() {
 		complete = true
 	}
 
-	p := path.Join(os.Getenv("HOME"), jmpdb)
-	db := jumpdb.MustNewDB(p)
-	dbloaded := db.LoadAsync()
+	dbPath := path.Join(os.Getenv("HOME"), jmpdb)
+	db := jumpdb.NewDB()
+	dbloaded := db.LoadAsync(dbPath)
 
 	var regex *regexp.Regexp
 	/* we can prepare the regex before loading is finished */
@@ -84,7 +84,7 @@ func main() {
 	}
 
 	saveDB := func() {
-		if err := db.Save(); err != nil {
+		if err := db.Save(dbPath); err != nil {
 			fmt.Fprintf(os.Stderr, "Could not save DB: %v\n", err)
 		}
 	}

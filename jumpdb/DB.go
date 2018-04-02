@@ -29,36 +29,34 @@ func (e byWeight) Less(i, j int) bool { return e[i].Weight < e[j].Weight }
 // DB represents the internal database
 type DB struct {
 	db     *Database
-	path   string
 	loaded chan error
 }
 
-// MustNewDB returns a pointer to a DB
-func MustNewDB(path string) *DB {
+// NewDB returns a pointer to a DB
+func NewDB() *DB {
 	return &DB{
 		db: &Database{
 			Version:    version,
 			PathWeight: make(map[string]int64),
 		},
-		path: path,
 	}
 }
 
-func (d *DB) load() {
+func (d *DB) load(fileName string) {
 	defer close(d.loaded)
 
-	fi, err := os.Stat(d.path)
+	fi, err := os.Stat(fileName)
 	if err != nil {
 		// d.loaded <- fmt.Errorf("Could not stat %s: %v", d.path, err)
 		// This is okay, maybe a fresh install, so start with an empty db
 		return
 	}
 	if !fi.Mode().IsRegular() {
-		d.loaded <- fmt.Errorf("Path %s is not a regular file", d.path)
+		d.loaded <- fmt.Errorf("Path %s is not a regular file", fileName)
 		return
 	}
 
-	in, err := ioutil.ReadFile(d.path)
+	in, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		d.loaded <- err
 		return
@@ -67,16 +65,16 @@ func (d *DB) load() {
 }
 
 // Load loads the database from the file system synchronously
-func (d *DB) Load() error {
+func (d *DB) Load(fileName string) error {
 	d.loaded = make(chan error)
-	d.load()
+	d.load(fileName)
 	return <-d.loaded
 }
 
 // LoadAsync loads the database from the flile system asynchronously
-func (d *DB) LoadAsync() chan error {
+func (d *DB) LoadAsync(fileName string) chan error {
 	d.loaded = make(chan error)
-	go d.load()
+	go d.load(fileName)
 	return d.loaded
 }
 
@@ -97,12 +95,12 @@ func (d *DB) List() error {
 }
 
 // Save stores the DB to the file system
-func (d *DB) Save() error {
+func (d *DB) Save(fileName string) error {
 	out, err := proto.Marshal(d.db)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(d.path, out, 0644)
+	return ioutil.WriteFile(fileName, out, 0644)
 }
 
 func (d *DB) normalize() error {

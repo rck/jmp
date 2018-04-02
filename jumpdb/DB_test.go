@@ -7,7 +7,7 @@ import (
 )
 
 func setupDB() (*DB, error) {
-	db := MustNewDB("/doesnotexist")
+	db := NewDB()
 
 	e := DBEntry{Path: "/root", Weight: 23}
 	if err := db.setEntry(e); err != nil {
