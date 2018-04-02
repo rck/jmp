@@ -152,21 +152,15 @@ func (d *DB) SetEntry(path string, weight int64) error {
 
 // IncPath increases the weight by one
 func (d *DB) IncEntry(path string) error {
-	weight := int64(0)
+	curWeight := d.db.PathWeight[path]
 
-	if curWeight, ok := d.db.PathWeight[path]; ok {
-		weight = curWeight
-	}
-
-	if weight == 1<<63-1 {
+	if curWeight == 1<<63-1 {
 		if err := d.normalize(); err != nil {
 			// Could not normalize, keep everything as is
 			return nil
 		}
-		if curWeight, ok := d.db.PathWeight[path]; ok {
-			weight = curWeight
-		}
+		curWeight = d.db.PathWeight[path]
 	}
 
-	return d.SetEntry(path, weight+1)
+	return d.SetEntry(path, curWeight+1)
 }

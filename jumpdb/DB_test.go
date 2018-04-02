@@ -43,6 +43,20 @@ func TestAdd(t *testing.T) {
 
 }
 
+func TestNew(t *testing.T) {
+	db, err := setupDB()
+	if err != nil {
+		t.Errorf("Could not set up DB: %v", err)
+	}
+
+	db.IncEntry("/didnotexist")
+	pw := db.db.GetPathWeight()
+	if w, ok := pw["/didnotexist"]; !ok || w != 1 {
+		t.Errorf("Expected '/didnotexist' with weight 1, but got: %t/%d", ok, w)
+	}
+
+}
+
 func TestCompletion(t *testing.T) {
 	db, err := setupDB()
 	if err != nil {
