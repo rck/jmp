@@ -139,14 +139,12 @@ func (d *DB) normalize() error {
 
 // SetEntry sets the weight of the given path. 0 weight is ignored, negative weight deletes the entry.
 func (d *DB) SetEntry(path string, weight int64) error {
-	if weight == 0 {
-		return nil
-	} else if weight < 0 {
+	if weight < 0 {
 		delete(d.db.PathWeight, path)
-		return nil
+	} else if weight > 0 {
+		d.db.PathWeight[path] = weight
 	}
 
-	d.db.PathWeight[path] = weight
 	return nil
 }
 
