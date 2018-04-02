@@ -90,8 +90,14 @@ func main() {
 	}
 
 	addCwdSavePrint := func(weight int64) {
-		if err := db.AddCwd(weight); err != nil {
-			fmt.Fprintf(os.Stderr, "Could not call AddCwd: %v\n", err)
+		wd, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not get PWD: %v\n", err)
+			return
+		}
+		if err := db.SetEntry(wd, weight); err != nil {
+			fmt.Fprintf(os.Stderr, "Could not call SetEntry: %v\n", err)
+			return
 		}
 		saveDB()
 		printResult(bestPath)
@@ -100,7 +106,7 @@ func main() {
 	if complete {
 		entries := db.Complete(regex)
 		if len(entries) > 0 && !*flagC {
-			if err := db.IncEntry(entries[0]); err != nil {
+			if err := db.IncEntry(entries[0].Path); err != nil {
 				fmt.Fprintf(os.Stderr, "Could not increase weight: %v\n", err)
 			}
 			saveDB()
@@ -112,8 +118,5 @@ func main() {
 		addCwdSavePrint(int64(*flagS))
 	} else if flag.NArg() == 1 && flag.Args()[0] == "." {
 		addCwdSavePrint(1)
-	} else {
-		fmt.Fprintln(os.Stderr, "Ooops, this should not happend")
-		os.Exit(1)
 	}
 }

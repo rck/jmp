@@ -103,6 +103,20 @@ func (d *DB) Save(fileName string) error {
 	return ioutil.WriteFile(fileName, out, 0644)
 }
 
+// Complete returns sorted entries matching the given regex
+func (d *DB) Complete(r *regexp.Regexp) []DBEntry {
+	var entries []DBEntry
+
+	for p, w := range d.db.GetPathWeight() {
+		if r.MatchString(p) {
+			entries = append(entries, DBEntry{Path: p, Weight: w})
+		}
+	}
+
+	sort.Sort(sort.Reverse(byWeight(entries)))
+	return entries
+}
+
 func (d *DB) normalize() error {
 	min := int64(1<<63 - 1)
 
@@ -123,54 +137,36 @@ func (d *DB) normalize() error {
 	return nil
 }
 
-func (d *DB) setEntry(entry DBEntry) error {
-	if entry.Weight == 0 {
-		delete(d.db.PathWeight, entry.Path)
+// SetEntry sets the weight of the given path. 0 weight is ignored, negative weight deletes the entry.
+func (d *DB) SetEntry(path string, weight int64) error {
+	if weight == 0 {
+		return nil
+	} else if weight < 0 {
+		delete(d.db.PathWeight, path)
 		return nil
 	}
-	d.db.PathWeight[entry.Path] = entry.Weight
+
+	d.db.PathWeight[path] = weight
 	return nil
 }
 
-// IncEntry increases the weight by one
-func (d *DB) IncEntry(entry DBEntry) error {
-	if entry.Weight == 1<<63-1 {
+// IncPath increases the weight by one
+func (d *DB) IncEntry(path string) error {
+	weight := int64(0)
+
+	if curWeight, ok := d.db.PathWeight[path]; ok {
+		weight = curWeight
+	}
+
+	if weight == 1<<63-1 {
 		if err := d.normalize(); err != nil {
 			// Could not normalize, keep everything as is
 			return nil
 		}
-	}
-	curWeight, ok := d.db.PathWeight[entry.Path]
-	if !ok {
-		return fmt.Errorf("No existing entry matching %s", entry.Path)
-	}
-	entry.Weight = curWeight + 1
-	return d.setEntry(entry)
-}
-
-// Complete returns sorted entries matching the given regex
-func (d *DB) Complete(r *regexp.Regexp) []DBEntry {
-	var entries []DBEntry
-
-	for p, w := range d.db.GetPathWeight() {
-		if r.MatchString(p) {
-			entries = append(entries, DBEntry{Path: p, Weight: w})
+		if curWeight, ok := d.db.PathWeight[path]; ok {
+			weight = curWeight
 		}
 	}
 
-	sort.Sort(sort.Reverse(byWeight(entries)))
-	return entries
-}
-
-// AddCwd adds the current working directory with the given weight
-func (d *DB) AddCwd(weight int64) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	if weight < 0 {
-		weight = 0
-	}
-	return d.setEntry(DBEntry{Path: wd, Weight: weight})
-
+	return d.SetEntry(path, weight+1)
 }

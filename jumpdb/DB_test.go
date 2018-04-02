@@ -10,12 +10,12 @@ func setupDB() (*DB, error) {
 	db := NewDB()
 
 	e := DBEntry{Path: "/root", Weight: 23}
-	if err := db.setEntry(e); err != nil {
+	if err := db.SetEntry(e.Path, e.Weight); err != nil {
 		return nil, fmt.Errorf("Could not add entry: %v", e)
 	}
 
 	e = DBEntry{Path: "/rck", Weight: 42}
-	if err := db.setEntry(e); err != nil {
+	if err := db.SetEntry(e.Path, e.Weight); err != nil {
 		return nil, fmt.Errorf("Could not add entry: %v", e)
 	}
 
@@ -69,8 +69,12 @@ func TestNormalization(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not set up DB: %v", err)
 	}
-	e := DBEntry{Path: "/rck", Weight: 1<<63 - 1}
-	if err := db.IncEntry(e); err != nil {
+
+	max := int64(1<<63 - 1)
+	db.db.PathWeight["/rck"] = max
+
+	root := db.db.PathWeight["/root"]
+	if err := db.IncEntry("/rck"); err != nil {
 		t.Errorf("Could not normalize DB: %v", err)
 	}
 
@@ -79,8 +83,9 @@ func TestNormalization(t *testing.T) {
 		t.Errorf("Expected '/root' with weight 1, but got: %t/%d", ok, w)
 	}
 
-	if w, ok := pw["/rck"]; !ok || w != 21 {
-		t.Errorf("Expected '/rck' with weight 21, but got: %t/%d", ok, w)
+	exp := max - root + 2
+	if w, ok := pw["/rck"]; !ok || w != exp {
+		t.Errorf("Expected '/rck' with weight %d, but got: %t/%d", exp, ok, w)
 	}
 }
 
@@ -89,9 +94,11 @@ func TestNormalizationFails(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not set up DB: %v", err)
 	}
+
+	max := int64(1<<63 - 1)
 	db.db.PathWeight["/root"] = 1
-	e := DBEntry{Path: "/rck", Weight: 1<<63 - 1}
-	if err := db.IncEntry(e); err != nil {
+	db.db.PathWeight["/rck"] = max
+	if err := db.IncEntry("/rck"); err != nil {
 		t.Errorf("Could not normalize DB: %v", err)
 	}
 
@@ -100,7 +107,8 @@ func TestNormalizationFails(t *testing.T) {
 		t.Errorf("Expected '/root' with weight 1, but got: %t/%d", ok, w)
 	}
 
-	if w, ok := pw["/rck"]; !ok || w != 42 {
-		t.Errorf("Expected '/rck' with weight 42, but got: %t/%d", ok, w)
+	exp := max
+	if w, ok := pw["/rck"]; !ok || w != exp {
+		t.Errorf("Expected '/rck' with weight %d, but got: %t/%d", exp, ok, w)
 	}
 }
