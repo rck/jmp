@@ -18,7 +18,7 @@ completion:
 install: jmp
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp -f jmp $(DESTDIR)$(PREFIX)/bin
-	@echo "For completions, you want to run 'make completions' as regular user"
+	@echo "For completions, you want to run 'make completion' as regular user"
 	@echo "Feel free to mv the locally installed completions to a system path (e.g. /etc/bash_completion.d/)"
 
 .PHONY: test
