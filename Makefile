@@ -12,7 +12,7 @@ completion:
 	mkdir -p ~/.jmp/functions
 	cp -f ./completions/jmp.* ~/.jmp
 	cp -f ./completions/_j ~/.jmp/functions
-	@echo "Completions installed to ~.jmp/"
+	@echo "Completions installed to ~/.jmp/"
 	@echo "You want to source the according file"
 
 install: jmp
