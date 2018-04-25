@@ -19,14 +19,25 @@ func printResult(entries []jumpdb.DBEntry) {
 		fmt.Println(".")
 		return
 	}
-	if !*flagC {
-		fmt.Println(entries[0].Path)
+
+	if *flagC {
+		for _, e := range entries {
+			fmt.Println(e.Path)
+		}
 		return
 	}
 
-	for _, e := range entries {
-		fmt.Println(e.Path)
+	// if there is an exact match, prefer that one (e.g., from completion)
+	if flag.NArg() == 1 {
+		input := flag.Args()[0]
+		for _, e := range entries {
+			if e.Path == input {
+				fmt.Println(e.Path)
+				return
+			}
+		}
 	}
+	fmt.Println(entries[0].Path)
 }
 
 var (
